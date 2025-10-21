@@ -1,46 +1,92 @@
+import java.util.ArrayList;
 import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
 
 public class Project_Melaniya_Batsuk {
     public static void main(String[] args) {
-        Scanner keyboard = new Scanner(System.in);
+        ArrayList<Policy> policies = new ArrayList<Policy>();
 
-        System.out.print("Please enter the Policy Number: ");
-        String policyNumber = keyboard.nextLine();
+        File dataFile = new File("PolicyInformation.txt");
+        Scanner fileReader = null;
 
-        System.out.print("Please enter the Provider Name: ");
-        String providerName = keyboard.nextLine();
+        try {
+            fileReader = new Scanner(dataFile);
 
-        System.out.print("Please enter the Policyholder’s First Name: ");
-        String firstName = keyboard.nextLine();
+            // Read 8 lines per policy until we run out
+            while (fileReader.hasNextLine()) {
+                String policyNumber = safeReadLine(fileReader);
+                if (policyNumber == null) break;
 
-        System.out.print("Please enter the Policyholder’s Last Name: ");
-        String lastName = keyboard.nextLine();
+                String providerName = safeReadLine(fileReader);
+                if (providerName == null) break;
 
-        System.out.print("Please enter the Policyholder’s Age: ");
-        int age = keyboard.nextInt();
-        keyboard.nextLine();
+                String firstName = safeReadLine(fileReader);
+                if (firstName == null) break;
 
-        System.out.print("Please enter the Policyholder’s Smoking Status (smoker/non-smoker): ");
-        String smokingStatus = keyboard.nextLine();
+                String lastName = safeReadLine(fileReader);
+                if (lastName == null) break;
 
-        System.out.print("Please enter the Policyholder’s Height (in inches): ");
-        double heightInches = keyboard.nextDouble();
+                String ageLine = safeReadLine(fileReader);
+                if (ageLine == null) break;
+                int age = Integer.parseInt(ageLine.trim());
 
-        System.out.print("Please enter the Policyholder’s Weight (in pounds): ");
-        double weightPounds = keyboard.nextDouble();
+                String smokingStatus = safeReadLine(fileReader);
+                if (smokingStatus == null) break; // "smoker" or "non-smoker"
 
-        Policy policy = new Policy(policyNumber, providerName, firstName, lastName, age, smokingStatus, heightInches, weightPounds);
+                String heightLine = safeReadLine(fileReader);
+                if (heightLine == null) break;
+                double heightInches = Double.parseDouble(heightLine.trim());
 
-        System.out.println();
-        System.out.println("Policy Number: " + policy.getPolicyNumber());
-        System.out.println("Provider Name: " + policy.getProviderName());
-        System.out.println("Policyholder’s First Name: " + policy.getPolicyholderFirstName());
-        System.out.println("Policyholder’s Last Name: " + policy.getPolicyholderLastName());
-        System.out.println("Policyholder’s Age: " + policy.getPolicyholderAge());
-        System.out.println("Policyholder’s Smoking Status: " + policy.getPolicyholderSmokingStatus());
-        System.out.printf("Policyholder’s Height: %.1f inches\n", policy.getPolicyholderHeightInches());
-        System.out.printf("Policyholder’s Weight: %.1f pounds\n", policy.getPolicyholderWeightPounds());
-        System.out.printf("Policyholder’s BMI: %.2f\n", policy.getBMI());
-        System.out.printf("Policy Price: $%.2f\n", policy.getPrice());
+                String weightLine = safeReadLine(fileReader);
+                if (weightLine == null) break;
+                double weightPounds = Double.parseDouble(weightLine.trim());
+
+                Policy p = new Policy(policyNumber, providerName, firstName, lastName,
+                                      age, smokingStatus, heightInches, weightPounds);
+                policies.add(p);
+            }
+
+        } catch (FileNotFoundException e) {
+            System.out.println("Could not find PolicyInformation.txt. Place it in the CSC251Project folder and try again.");
+            return;
+        } finally {
+            if (fileReader != null) fileReader.close();
+        }
+
+        // Step 3 — display each policy (exact formatting from your course)
+        int smokerCount = 0;
+        int nonSmokerCount = 0;
+
+        for (int i = 0; i < policies.size(); i++) {
+            Policy p = policies.get(i);
+
+            System.out.println("Policy Number: " + p.getPolicyNumber());
+            System.out.println("Provider Name: " + p.getProviderName());
+            System.out.println("Policyholder's First Name: " + p.getPolicyholderFirstName());
+            System.out.println("Policyholder's Last Name: " + p.getPolicyholderLastName());
+            System.out.println("Policyholder's Age: " + p.getPolicyholderAge());
+            System.out.println("Policyholder's Smoking Status (smoker/non-smoker): " + p.getPolicyholderSmokingStatus());
+            System.out.printf("Policyholder's Height: %.1f inches\n", p.getPolicyholderHeightInches());
+            System.out.printf("Policyholder's Weight: %.1f pounds\n", p.getPolicyholderWeightPounds());
+            System.out.printf("Policyholder's BMI: %.2f\n", p.getBMI());
+            System.out.printf("Policy Price: $%.2f\n", p.getPrice());
+            System.out.println();
+
+            if (p.getPolicyholderSmokingStatus().equalsIgnoreCase("smoker")) {
+                smokerCount++;
+            } else {
+                nonSmokerCount++;
+            }
+        }
+
+        // Step 4 — totals
+        System.out.println("The number of policies with a smoker is: " + smokerCount);
+        System.out.println("The number of policies with a non-smoker is: " + nonSmokerCount);
+    }
+
+    private static String safeReadLine(Scanner sc) {
+        if (sc.hasNextLine()) return sc.nextLine();
+        return null;
     }
 }
